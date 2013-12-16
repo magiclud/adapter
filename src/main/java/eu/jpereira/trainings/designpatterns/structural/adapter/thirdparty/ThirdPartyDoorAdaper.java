@@ -4,20 +4,29 @@ import eu.jpereira.trainings.designpatterns.structural.adapter.exceptions.CodeMi
 import eu.jpereira.trainings.designpatterns.structural.adapter.exceptions.IncorrectDoorCodeException;
 import eu.jpereira.trainings.designpatterns.structural.adapter.model.Door;
 import eu.jpereira.trainings.designpatterns.structural.adapter.thirdparty.exceptions.CannotChangeCodeForUnlockedDoor;
+import eu.jpereira.trainings.designpatterns.structural.adapter.thirdparty.exceptions.CannotChangeStateOfLockedDoor;
 import eu.jpereira.trainings.designpatterns.structural.adapter.thirdparty.exceptions.CannotUnlockDoorException;
 
 //to sama zaimplementowalam
 
 public class ThirdPartyDoorAdaper extends ThirdPartyDoor implements Door {
 
-	ThirdPartyDoor door;
+	ThirdPartyDoor door = new ThirdPartyDoor();
 
 	@Override
 	public void open(String code) throws IncorrectDoorCodeException {
 		// TODO Auto-generated method stub
 		try {
-			door.unlock(code);
+			if (!isOpen()) {
+				door.unlock(door.DEFAULT_CODE);
+				if (door.getLockStatus().equals(LockStatus.UNLOCKED)) {
+					door.setState(DoorState.OPEN);
+				}
+			}
 		} catch (CannotUnlockDoorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (CannotChangeStateOfLockedDoor e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -26,9 +35,15 @@ public class ThirdPartyDoorAdaper extends ThirdPartyDoor implements Door {
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
-		door.lock();
-
+		try {
+			if (isOpen()) {
+				// TODO Auto-generated method stub
+				door.setState(DoorState.CLOSED);
+			}
+		} catch (CannotChangeStateOfLockedDoor e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -44,9 +59,17 @@ public class ThirdPartyDoorAdaper extends ThirdPartyDoor implements Door {
 	public void changeCode(String oldCode, String newCode, String newCodeConfirmation) throws IncorrectDoorCodeException,
 			CodeMismatchException {
 		// TODO Auto-generated method stub
+
 		try {
+			if (door.getLockStatus().equals(LockStatus.LOCKED)) {
+				door.unlock(newCode);
+				door.unlock(newCodeConfirmation);
+			}
 			door.setNewLockCode(newCode);
 		} catch (CannotChangeCodeForUnlockedDoor e) {
+			// TODO Auto-generated catch block
+			throw new IncorrectDoorCodeException();
+		} catch (CannotUnlockDoorException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -56,7 +79,7 @@ public class ThirdPartyDoorAdaper extends ThirdPartyDoor implements Door {
 	@Override
 	public boolean testCode(String code) {
 		// TODO Auto-generated method stub
-		return door.DEFAULT_CODE.equals(code);
+		return code.equals(this.door);
 	}
 
 }
