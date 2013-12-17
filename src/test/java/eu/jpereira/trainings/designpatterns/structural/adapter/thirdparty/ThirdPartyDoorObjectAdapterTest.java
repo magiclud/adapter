@@ -38,7 +38,7 @@ public class ThirdPartyDoorObjectAdapterTest extends DoorTest{
 	// a to dopisc
 	@Override
 	protected Door createDoorUnderTest() {
-		return new ThirdPartyDoorAdaper();
+		return new ThirdParyDoorObjectAdapter();
 	}
 	@Override
 	protected String getDefaultDoorCode() {
